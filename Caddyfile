@@ -1,0 +1,27 @@
+{
+    auto_https disable_redirects
+}
+
+(security_headers) {
+    encode zstd gzip
+    header {
+        -Server
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self'"
+    }
+}
+
+# HTTP para desenvolvimento e demonstracao na mesma LAN.
+:80 {
+    import security_headers
+    reverse_proxy app:3000
+}
+
+# HTTPS: localhost recebe certificado local; um dominio publico recebe TLS automatico.
+https://{$DOMAIN:localhost} {
+    import security_headers
+    reverse_proxy app:3000
+}
